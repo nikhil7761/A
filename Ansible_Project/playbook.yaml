@@ -1,0 +1,8 @@
+---
+- name: Create a text file on Windows node
+  hosts: windows
+  tasks:
+    - name: Create a simple text file
+      win_copy:
+        content: "Hello, this is a file created by Nikhil!"
+        dest: C:\Temp\ansible_test.txt

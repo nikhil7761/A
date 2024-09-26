@@ -1,0 +1,5 @@
+ansible --version
+/etc/ansible/hosts
+sudo nano /etc/ansible/hosts
+ansible-playbook -i inventory playbook.yml
+
