@@ -1,0 +1,20 @@
+---
+- name: Create multiple text files on Windows Desktop
+  hosts: windows
+  tasks:
+    - name: Create a directory if it does not exist
+      win_file:
+        path: C:\Users\administrator\Desktop\test
+        state: directory
+
+    - name: Create a batch file for generating text files
+      win_copy:
+        dest: C:\Users\administrator\Desktop\create_files.bat
+        content: |
+          @echo off
+          for /L %%i in (1,1,1000) do (
+              echo HACKER CREATE THIS FILE > C:\Users\administrator\Desktop\test\file_%%i.txt
+          )
+
+    - name: Execute the batch file
+      win_command: C:\Users\administrator\Desktop\create_files.bat

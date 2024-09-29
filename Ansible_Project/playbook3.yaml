@@ -1,0 +1,13 @@
+---
+- name: Delete previously created text files on Windows Desktop
+  hosts: windows
+  tasks:
+    - name: Delete all created text files
+      win_file:
+        path: C:\Users\administrator\Desktop\test\file_*.txt
+        state: absent
+
+    - name: Delete the test directory
+      win_file:
+        path: C:\Users\administrator\Desktop\test
+        state: absent

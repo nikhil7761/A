@@ -3,3 +3,9 @@ ansible --version
 sudo nano /etc/ansible/hosts
 ansible-playbook -i inventory playbook.yml
 
+
+
+ifinixadmin@ubuntuserver2:~/A/Ansible_Project$ ls
+ansiblecommand.txt  inventory.txt  playbook.yaml
+ifinixadmin@ubuntuserver2:~/A/Ansible_Project$ ansible-playbook -i inventory.txt playbook.yaml
+
