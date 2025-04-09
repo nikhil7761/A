@@ -1,0 +1,93 @@
+---
+- name: Install SonarQube on Linux nodes
+  hosts: nodes
+  become: yes
+  gather_facts: yes
+
+  vars:
+    sonarqube_version: "10.2.1.78527"
+    sonarqube_user: "sonarqube"
+    sonarqube_dir: "/opt/sonarqube"
+    sonarqube_service: "/etc/systemd/system/sonarqube.service"
+
+  tasks:
+
+    - name: Install dependencies
+      apt:
+        name:
+          - unzip
+          - wget
+          - openjdk-17-jdk
+        state: present
+
+    - name: Create SonarQube user
+      user:
+        name: "{{ sonarqube_user }}"
+        system: yes
+        shell: /bin/bash
+        create_home: yes
+
+    - name: Download SonarQube
+      get_url:
+        url: "https://binaries.sonarsource.com/Distribution/sonarqube/sonarqube-{{ sonarqube_version }}.zip"
+        dest: "/tmp/sonarqube.zip"
+
+    - name: Extract SonarQube
+      unarchive:
+        src: "/tmp/sonarqube.zip"
+        dest: "/opt/"
+        remote_src: yes
+
+    - name: Rename SonarQube directory
+      command: mv "/opt/sonarqube-{{ sonarqube_version }}" "{{ sonarqube_dir }}"
+      args:
+        creates: "{{ sonarqube_dir }}"
+
+    - name: Change ownership
+      file:
+        path: "{{ sonarqube_dir }}"
+        owner: "{{ sonarqube_user }}"
+        group: "{{ sonarqube_user }}"
+        recurse: yes
+
+    - name: Configure SonarQube as a systemd service
+      copy:
+        dest: "{{ sonarqube_service }}"
+        content: |
+          [Unit]
+          Description=SonarQube service
+          After=network.target
+
+          [Service]
+          Type=forking
+
+          ExecStart={{ sonarqube_dir }}/bin/linux-x86-64/sonar.sh start
+          ExecStop={{ sonarqube_dir }}/bin/linux-x86-64/sonar.sh stop
+
+          User={{ sonarqube_user }}
+          Group={{ sonarqube_user }}
+          Restart=always
+
+          LimitNOFILE=65536
+          LimitNPROC=4096
+
+          [Install]
+          WantedBy=multi-user.target
+      notify: Restart SonarQube
+
+    - name: Enable SonarQube service
+      systemd:
+        name: sonarqube
+        enabled: yes
+        daemon_reload: yes
+
+    - name: Start SonarQube service
+      systemd:
+        name: sonarqube
+        state: started
+
+  handlers:
+    - name: Restart SonarQube
+      systemd:
+        name: sonarqube
+        state: restarted
